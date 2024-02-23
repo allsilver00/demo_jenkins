@@ -1,11 +1,14 @@
 pipeline {
     // 스테이지 별로 다른 거
+
+    //agent 아무나 씀
     agent any
 
     triggers {
         pollSCM('*/3 * * * *')
     }
-
+    //파이프라인에서 사용하는 환경변수
+    //jenkins credential에 등록함
     environment {
       AWS_ACCESS_KEY_ID = credentials('awsAccessKeyId')
       AWS_SECRET_ACCESS_KEY = credentials('awsSecretAccessKey')
@@ -21,9 +24,9 @@ pipeline {
             steps {
                 echo 'Clonning Repository'
 
-                git url: 'https://github.com/frontalnh/temp.git',
+                git url: 'https://github.com/allsilver00/demo_jenkins.git',
                     branch: 'master',
-                    credentialsId: 'jenkinsgit'
+                    credentialsId: 'gittest'
             }
 
             post {
@@ -60,8 +63,8 @@ pipeline {
               // failed, record the test results and archive the jar file.
               success {
                   echo 'Successfully Cloned Repository'
-
-                  mail  to: 'frontalnh@gmail.com',
+                  // 알림을 보낼 메일을 credential에 등록해줘야함
+                  mail  to: 'rubyda125@gmail.com',
                         subject: "Deploy Frontend Success",
                         body: "Successfully deployed frontend!"
 
@@ -70,13 +73,14 @@ pipeline {
               failure {
                   echo 'I failed :('
 
-                  mail  to: 'frontalnh@gmail.com',
+                  mail  to: 'rubyda125@gmail.com',
                         subject: "Failed Pipelinee",
                         body: "Something is wrong with deploy frontend"
               }
           }
         }
         
+
         stage('Lint Backend') {
             // Docker plugin and Docker Pipeline 두개를 깔아야 사용가능!
             agent {
@@ -84,7 +88,7 @@ pipeline {
                 image 'node:latest'
               }
             }
-            
+            //자바 스크립트
             steps {
               dir ('./server'){
                   sh '''
@@ -117,7 +121,7 @@ pipeline {
           agent any
           steps {
             echo 'Build Backend'
-
+            // 서버배포시 도커 빌드해서 올림
             dir ('./server'){
                 sh """
                 docker build . -t server --build-arg env=${PROD}
@@ -131,13 +135,15 @@ pipeline {
             }
           }
         }
-        
+        // 배포 ecs 업데이트 등
         stage('Deploy Backend') {
           agent any
 
           steps {
             echo 'Build Backend'
 
+
+            // 서버 도커 빌드
             dir ('./server'){
                 sh '''
                 docker rm -f $(docker ps -aq)
@@ -148,7 +154,7 @@ pipeline {
 
           post {
             success {
-              mail  to: 'frontalnh@gmail.com',
+              mail  to: 'rubyda125@gmail.com',
                     subject: "Deploy Success",
                     body: "Successfully deployed!"
                   
