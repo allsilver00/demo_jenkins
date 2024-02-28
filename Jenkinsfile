@@ -10,8 +10,8 @@ pipeline {
     //파이프라인에서 사용하는 환경변수
     //jenkins credential에 등록함
     environment {
-      AWS_ACCESS_KEY_ID = credentials('awsAccessKeyId')
-      AWS_SECRET_ACCESS_KEY = credentials('awsSecretAccessKey')
+      AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+      AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
       AWS_DEFAULT_REGION = 'ap-northeast-2'
       HOME = '.' // Avoid npm root owned
     }
@@ -146,7 +146,7 @@ pipeline {
             // 서버 도커 빌드
             dir ('./server'){
                 sh '''
-                docker rm -f $(docker ps -aq)
+              
                 docker run -p 80:80 -d server
                 '''
             }
